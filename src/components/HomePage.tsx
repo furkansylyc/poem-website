@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { Poem } from '../types'
+import { apiService } from '../services/api'
 
 interface HomePageProps {
   poems: Poem[]
@@ -14,7 +15,29 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [showAbout, setShowAbout] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const selectedPoem = poems.find(p => p._id === id)
+  const [directPoem, setDirectPoem] = useState<Poem | null>(null)
+  const [loadingDirectPoem, setLoadingDirectPoem] = useState(false)
+  
+  // Önce poems array'inden ara
+  const selectedPoem = poems.find(p => p._id === id) || directPoem
+
+  // Direkt URL'de şiir ID'si varsa ve poems array'inde yoksa, API'den çek
+  useEffect(() => {
+    if (id && !poems.find(p => p._id === id) && !directPoem && !loadingDirectPoem) {
+      setLoadingDirectPoem(true)
+      apiService.getPoem(id)
+        .then(poem => {
+          setDirectPoem(poem)
+        })
+        .catch(error => {
+          console.error('Şiir yüklenirken hata:', error)
+          // Hata durumunda directPoem null kalır, "Şiir Bulunamadı" gösterilir
+        })
+        .finally(() => {
+          setLoadingDirectPoem(false)
+        })
+    }
+  }, [id, poems, directPoem, loadingDirectPoem])
 
   const handlePoemClick = (poemId: string) => {
     navigate(`/poem/${poemId}`)
@@ -198,7 +221,17 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
           </div>
         )}
 
-        {id && !selectedPoem ? (
+        {id && loadingDirectPoem ? (
+          // Şiir Yükleniyor
+          <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                <p className="text-gray-600">Şiir yükleniyor...</p>
+              </div>
+            </div>
+          </div>
+        ) : id && !selectedPoem && !loadingDirectPoem ? (
           // Şiir Bulunamadı
           <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
             <div className="max-w-4xl mx-auto">

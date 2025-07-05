@@ -12,15 +12,5 @@
         "distDir": "dist"
       }
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/backend/server.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/dist/index.html"
-    }
   ]
 }

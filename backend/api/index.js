@@ -94,6 +94,15 @@ const authenticateToken = (req, res, next) => {
 app.get('/api/poems', async (req, res) => {
   try {
     const poems = await Poem.find().sort({ date: -1 });
+    
+    // Mevcut şiirlerde views alanı yoksa ekle
+    for (let poem of poems) {
+      if (poem.views === undefined) {
+        poem.views = 0;
+        await poem.save();
+      }
+    }
+    
     res.json(poems);
   } catch (error) {
     console.error('Poems fetch error:', error);
@@ -107,6 +116,11 @@ app.get('/api/poems/:id', async (req, res) => {
     const poem = await Poem.findById(req.params.id);
     if (!poem) {
       return res.status(404).json({ message: 'Şiir bulunamadı' });
+    }
+    
+    // Views alanı yoksa ekle
+    if (poem.views === undefined) {
+      poem.views = 0;
     }
     
     // Görüntülenme sayısını artır

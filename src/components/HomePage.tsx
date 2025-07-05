@@ -276,7 +276,7 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
                 <div className="bg-gray-50 rounded-lg p-4 lg:p-8">
                   <h3 className="text-xl lg:text-2xl font-display font-bold text-gray-900 mb-4">Şiirleri Keşfetmeye Başlayın</h3>
                   <p className="text-gray-600 mb-6">
-                    <span className="lg:hidden">Üst menüdeki hamburger ikonuna tıklayarak şiir listesini açabilirsiniz.</span>
+                    <span className="lg:hidden">Üst menüye tıklayarak şiir listesini açabilirsiniz.</span>
                     <span className="hidden lg:inline">Sol taraftaki listeden bir şiir seçerek okumaya başlayabilirsiniz.</span>
                   </p>
                 </div>

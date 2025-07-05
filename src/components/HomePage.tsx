@@ -198,7 +198,30 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
           </div>
         )}
 
-        {selectedPoem ? (
+        {id && !selectedPoem ? (
+          // Şiir Bulunamadı
+          <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
+                <div className="text-red-500 mb-4">
+                  <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33" />
+                  </svg>
+                </div>
+                <h1 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-4">Şiir Bulunamadı</h1>
+                <p className="text-gray-600 mb-6">
+                  Aradığınız şiir bulunamadı veya silinmiş olabilir.
+                </p>
+                <button
+                  onClick={() => navigate('/')}
+                  className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  Ana Sayfaya Dön
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : selectedPoem ? (
           // Şiir Detayı
           <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
             <div className="max-w-4xl mx-auto">

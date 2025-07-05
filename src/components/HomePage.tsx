@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { Poem, Comment } from '../types'
 import { apiService } from '../services/api'
@@ -24,6 +24,7 @@ const HomePage = ({ poems, isAdmin, logoutAdmin, visitCount }: HomePageProps) =>
   const [commentName, setCommentName] = useState('')
   const [commentText, setCommentText] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
+  const viewedPoems = useRef<Set<string>>(new Set())
   
   // Önce poems array'inden ara
   const selectedPoem = poems.find(p => p._id === id) || directPoem
@@ -46,12 +47,40 @@ const HomePage = ({ poems, isAdmin, logoutAdmin, visitCount }: HomePageProps) =>
     }
   }, [id, poems, directPoem, loadingDirectPoem])
 
-  // Şiir değiştiğinde yorumları yükle
+  // URL'de şiir ID'si varsa ve poems array'inde varsa, görüntülenme sayısını artır
+  useEffect(() => {
+    if (id && poems.find(p => p._id === id) && !loadingDirectPoem) {
+      const poem = poems.find(p => p._id === id)
+      if (poem) {
+        incrementPoemViews(poem._id)
+      }
+    }
+  }, [id, poems, loadingDirectPoem])
+
+  // Şiir değiştiğinde yorumları yükle ve görüntülenme sayısını artır
   useEffect(() => {
     if (selectedPoem) {
       loadComments()
+      incrementPoemViews()
     }
   }, [selectedPoem])
+
+  const incrementPoemViews = async (poemId?: string) => {
+    const targetPoemId = poemId || selectedPoem?._id
+    if (!targetPoemId) return
+    
+    // Bu şiir daha önce görüntülenmişse artırma
+    if (viewedPoems.current.has(targetPoemId)) return
+    
+    try {
+      // Şiir görüntülenme sayısını artır
+      await apiService.getPoem(targetPoemId)
+      // Görüntülenen şiirleri kaydet
+      viewedPoems.current.add(targetPoemId)
+    } catch (error) {
+      console.error('Şiir görüntülenme sayısı artırılırken hata:', error)
+    }
+  }
 
   const loadComments = async () => {
     if (!selectedPoem) return

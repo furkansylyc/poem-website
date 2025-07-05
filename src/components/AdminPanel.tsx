@@ -278,7 +278,7 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
                           </span>
                         </div>
                         <p className="text-gray-600 text-sm mb-2">
-                          Şiir ID: {comment.poemId}
+                          Şiir: {typeof comment.poemId === 'object' && comment.poemId ? comment.poemId.title : (comment.poemId as string)}
                         </p>
                         <p className="text-gray-700 text-sm mb-2">
                           {new Date(comment.date).toLocaleDateString('tr-TR', {

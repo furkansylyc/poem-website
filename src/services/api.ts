@@ -9,7 +9,7 @@ export interface Poem {
 
 export interface Comment {
   _id: string;
-  poemId: string;
+  poemId: string | { _id: string; title: string };
   name: string;
   comment: string;
   date: string;

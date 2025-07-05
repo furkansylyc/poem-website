@@ -57,11 +57,10 @@ const HomePage = ({ poems, isAdmin, logoutAdmin, visitCount }: HomePageProps) =>
     }
   }, [id, poems, loadingDirectPoem])
 
-  // Şiir değiştiğinde yorumları yükle ve görüntülenme sayısını artır
+  // Şiir değiştiğinde yorumları yükle
   useEffect(() => {
     if (selectedPoem) {
       loadComments()
-      incrementPoemViews()
     }
   }, [selectedPoem])
 

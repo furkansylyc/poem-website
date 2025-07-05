@@ -344,9 +344,10 @@ app.post('/api/visits/increment', async (req, res) => {
   }
 });
 
-// Ziyaret sayısını sıfırla (Admin için)
+// Ziyaret sayısını ve şiir görüntülenmelerini sıfırla (Admin için)
 app.post('/api/visits/reset', authenticateToken, async (req, res) => {
   try {
+    // Ziyaret sayacını sıfırla
     let visit = await Visit.findOne();
     if (!visit) {
       visit = new Visit({ count: 0 });
@@ -355,7 +356,14 @@ app.post('/api/visits/reset', authenticateToken, async (req, res) => {
       visit.lastUpdated = new Date();
     }
     await visit.save();
-    res.json({ count: visit.count, message: 'Ziyaret sayacı sıfırlandı' });
+
+    // Tüm şiirlerin görüntülenme sayılarını sıfırla
+    await Poem.updateMany({}, { views: 0 });
+
+    res.json({ 
+      count: visit.count, 
+      message: 'Ziyaret sayacı ve tüm şiir görüntülenmeleri sıfırlandı' 
+    });
   } catch (error) {
     console.error('Reset visits error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });

@@ -63,13 +63,15 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
   }
 
   const handleResetVisits = async () => {
-    if (window.confirm('Ziyaret sayacını sıfırlamak istediğinizden emin misiniz?')) {
+    if (window.confirm('Ziyaret sayacını VE tüm şiir görüntülenme sayılarını sıfırlamak istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!')) {
       try {
-        await apiService.resetVisits()
-        alert('Ziyaret sayacı sıfırlandı!')
+        const result = await apiService.resetVisits()
+        alert(result.message || 'Tüm sayaçlar sıfırlandı!')
+        // Şiir listesini yeniden yükle
+        window.location.reload()
       } catch (error) {
-        console.error('Ziyaret sayacı sıfırlama hatası:', error)
-        alert('Ziyaret sayacı sıfırlanırken bir hata oluştu.')
+        console.error('Sayaç sıfırlama hatası:', error)
+        alert('Sayaçlar sıfırlanırken bir hata oluştu.')
       }
     }
   }
@@ -133,7 +135,7 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <span className="ml-2">Ziyaret Sayacını Sıfırla</span>
+              <span className="ml-2">Tüm Sayaçları Sıfırla</span>
             </button>
             <Link to="/" className="button-secondary">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

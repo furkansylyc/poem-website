@@ -262,7 +262,7 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
                         Her şiir, kalbimden geldi ve hayatımın farklı dönemlerinden ilham aldı.
                       </p>
                       <p>
-                        <span className="lg:hidden">Üst menüdeki hamburger ikonuna tıklayarak</span>
+                        <span className="lg:hidden">Üst menüye tıklayıp</span>
                         <span className="hidden lg:inline">Sol taraftaki listeden</span> istediğiniz şiiri seçerek okumaya başlayabilirsiniz. 
                         Her şiir, benim için özel anlamlar taşıyor ve umarım sizin için de değerli olur.
                       </p>

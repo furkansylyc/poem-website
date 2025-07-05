@@ -16,7 +16,7 @@ console.log('PORT:', process.env.PORT);
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-project.vercel.app', 'https://your-project.vercel.app/'] 
+    ? ['https://senolsoyleyici.com.tr', 'https://senolsoyleyici.com.tr/'] 
     : ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true
 }));

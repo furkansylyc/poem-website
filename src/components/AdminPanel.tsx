@@ -5,7 +5,7 @@ import { apiService } from '../services/api'
 
 interface AdminPanelProps {
   poems: Poem[]
-  addPoem: (poem: Omit<Poem, '_id' | 'date'>) => Promise<boolean>
+  addPoem: (poem: Omit<Poem, '_id' | 'date'> & { date?: string }) => Promise<boolean>
   deletePoem: (id: string) => Promise<boolean>
   isAdmin: boolean
 }
@@ -13,6 +13,7 @@ interface AdminPanelProps {
 const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [poemDate, setPoemDate] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
   const [activeTab, setActiveTab] = useState<'poems' | 'comments'>('poems')
   const [comments, setComments] = useState<Comment[]>([])
@@ -82,11 +83,13 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
       const success = await addPoem({
         title: title.trim(),
         content: content.trim(),
-        views: 0
+        views: 0,
+        date: poemDate || undefined
       })
       if (success) {
         setTitle('')
         setContent('')
+        setPoemDate('')
         setShowAddForm(false)
       }
     }
@@ -195,6 +198,22 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
                   placeholder="Şiir başlığını girin"
                   required
                 />
+              </div>
+              <div>
+                <label htmlFor="poemDate" className="block text-sm font-medium text-gray-700 mb-2">
+                  Şiir Tarihi (İsteğe bağlı)
+                </label>
+                <input
+                  type="date"
+                  id="poemDate"
+                  value={poemDate}
+                  onChange={(e) => setPoemDate(e.target.value)}
+                  className="input-field"
+                  placeholder="Şiir yazıldığı tarihi seçin"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Boş bırakırsanız şu anki tarih kullanılır
+                </p>
               </div>
               <div>
                 <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">

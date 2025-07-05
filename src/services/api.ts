@@ -93,10 +93,10 @@ class ApiService {
   }
 
   // Şiir ekle
-  async addPoem(title: string, content: string): Promise<Poem> {
+  async addPoem(title: string, content: string, date?: string): Promise<Poem> {
     return this.request('/poems', {
       method: 'POST',
-      body: JSON.stringify({ title, content }),
+      body: JSON.stringify({ title, content, date }),
     });
   }
 

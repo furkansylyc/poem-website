@@ -58,9 +58,9 @@ function App() {
     }
   }
 
-  const addPoem = async (poem: Omit<Poem, '_id' | 'date'>) => {
+  const addPoem = async (poem: Omit<Poem, '_id' | 'date'> & { date?: string }) => {
     try {
-      const newPoem = await apiService.addPoem(poem.title, poem.content)
+      const newPoem = await apiService.addPoem(poem.title, poem.content, poem.date)
       setPoems(prev => [newPoem, ...prev])
       return true
     } catch (err) {

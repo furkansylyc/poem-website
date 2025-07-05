@@ -163,16 +163,19 @@ app.post('/api/admin/login', async (req, res) => {
 // Şiir ekle (Admin gerekli)
 app.post('/api/poems', authenticateToken, async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, date } = req.body;
     
     if (!title || !content) {
       return res.status(400).json({ message: 'Başlık ve içerik gerekli' });
     }
 
+    // Tarih varsa kullan, yoksa şu anki tarihi kullan
+    const poemDate = date ? new Date(date) : new Date();
+
     const poem = new Poem({
       title,
       content,
-      date: new Date()
+      date: poemDate
     });
 
     const savedPoem = await poem.save();

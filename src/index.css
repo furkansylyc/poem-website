@@ -189,6 +189,65 @@ body {
   }
 }
 
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .button-primary,
+  .button-secondary {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+  
+  .input-field,
+  .textarea-field {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+  }
+  
+  .textarea-field {
+    min-height: 100px;
+  }
+}
+
+/* Mobile Sidebar Animation */
+.sidebar-transition {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Mobile Touch Improvements */
+@media (max-width: 768px) {
+  button, 
+  a,
+  input,
+  textarea {
+    min-height: 44px; /* iOS minimum touch target */
+  }
+  
+  .button-primary,
+  .button-secondary {
+    min-height: 44px;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+  
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Mobile Modal Improvements */
+@media (max-width: 768px) {
+  .modal-content {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+}
+
 a {
   font-weight: 500;
   color: #646cff;

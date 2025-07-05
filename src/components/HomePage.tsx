@@ -13,10 +13,13 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [showAbout, setShowAbout] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const selectedPoem = poems.find(p => p._id === id)
 
   const handlePoemClick = (poemId: string) => {
     navigate(`/poem/${poemId}`)
+    // Mobilde şiir seçildikten sonra sidebar'ı kapat
+    setSidebarOpen(false)
   }
 
   // Arama filtresi
@@ -26,17 +29,37 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
 
   return (
     <div className="h-screen w-screen bg-white flex overflow-hidden">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar - Şiir Listesi */}
-      <div className="w-80 bg-gray-100 border-r border-gray-300 flex flex-col flex-shrink-0">
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-50 w-80 bg-gray-100 border-r border-gray-300 flex flex-col flex-shrink-0 transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-300 bg-gray-200">
-          <h1 className="text-2xl font-display font-bold text-gray-900 mb-1">
+        <div className="p-4 lg:p-6 border-b border-gray-300 bg-gray-200 flex items-center justify-between">
+          <h1 className="text-xl lg:text-2xl font-display font-bold text-gray-900">
             Şenol Söyleyici Şiirler
           </h1>
+          {/* Mobile close button */}
+          <button 
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         {/* Arama */}
-        <div className="p-4 border-b border-gray-300 bg-gray-150">
+        <div className="p-3 lg:p-4 border-b border-gray-300 bg-gray-150">
           <div className="relative">
             <input
               type="text"
@@ -53,8 +76,8 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
 
         {/* Şiir Listesi */}
         <div className="flex-1 overflow-y-auto bg-gray-100">
-          <div className="p-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="p-3 lg:p-4">
+            <h2 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">
               Şiirler {searchTerm && `(${filteredPoems.length} sonuç)`}
             </h2>
             <div className="space-y-2">
@@ -62,7 +85,7 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
                 <button
                   key={poem._id}
                   onClick={() => handlePoemClick(poem._id)}
-                  className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                  className={`w-full text-left p-2 lg:p-3 rounded-lg border transition-colors ${
                     selectedPoem?._id === poem._id
                       ? 'bg-gray-300 border-gray-400 text-gray-900'
                       : 'bg-white border-gray-300 hover:bg-gray-200 text-gray-700'
@@ -91,41 +114,55 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+        <div className="bg-white border-b border-gray-200 p-3 lg:p-4 flex justify-between items-center">
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
           <div className="flex-1"></div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 lg:space-x-3">
             <button
               onClick={() => setShowAbout(!showAbout)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+              className="px-3 py-2 lg:px-4 lg:py-2 text-xs lg:text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1 lg:gap-2"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Kimdir ?
+              <span className="hidden sm:inline">Kimdir ?</span>
+              <span className="sm:hidden">?</span>
             </button>
             
             {isAdmin ? (
-              <div className="flex items-center space-x-2">
-                <Link to="/admin" className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-center space-x-1 lg:space-x-2">
+                <Link to="/admin" className="px-3 py-2 lg:px-4 lg:py-2 text-xs lg:text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1 lg:gap-2">
+                  <svg className="w-3 h-3 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  Admin
+                  <span className="hidden sm:inline">Admin</span>
+                  <span className="sm:hidden">A</span>
                 </Link>
-                <button onClick={logoutAdmin} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button onClick={logoutAdmin} className="px-3 py-2 lg:px-4 lg:py-2 text-xs lg:text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1 lg:gap-2">
+                  <svg className="w-3 h-3 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  Çıkış
+                  <span className="hidden sm:inline">Çıkış</span>
+                  <span className="sm:hidden">Ç</span>
                 </button>
               </div>
             ) : (
-              <Link to="/admin/login" className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Link to="/admin/login" className="px-3 py-2 lg:px-4 lg:py-2 text-xs lg:text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1 lg:gap-2">
+                <svg className="w-3 h-3 lg:w-4 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
-                Giriş
+                <span className="hidden sm:inline">Giriş</span>
+                <span className="sm:hidden">G</span>
               </Link>
             )}
           </div>
@@ -133,11 +170,11 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
 
         {/* Hakkında Modal */}
         {showAbout && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-              <div className="p-6">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-4 lg:p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-display font-bold text-gray-900">Hakkında</h2>
+                  <h2 className="text-xl lg:text-2xl font-display font-bold text-gray-900">Hakkında</h2>
                   <button
                     onClick={() => setShowAbout(false)}
                     className="text-gray-400 hover:text-gray-600"
@@ -163,11 +200,11 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
 
         {selectedPoem ? (
           // Şiir Detayı
-          <div className="flex-1 p-8 overflow-y-auto">
+          <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-                <div className="bg-gray-50 border-b border-gray-200 p-8">
-                  <h1 className="text-3xl font-display font-bold text-gray-900 mb-2">{selectedPoem.title}</h1>
+                <div className="bg-gray-50 border-b border-gray-200 p-4 lg:p-8">
+                  <h1 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">{selectedPoem.title}</h1>
                   <p className="text-gray-600">
                     {new Date(selectedPoem.date).toLocaleDateString('tr-TR', {
                       year: 'numeric',
@@ -177,8 +214,8 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
                   </p>
                 </div>
                 
-                <div className="p-8">
-                  <div className="text-gray-700 text-lg leading-relaxed whitespace-pre-line mb-8">
+                <div className="p-4 lg:p-8">
+                  <div className="text-gray-700 text-base lg:text-lg leading-relaxed whitespace-pre-line mb-8">
                     {selectedPoem.content}
                   </div>
                 </div>
@@ -187,22 +224,23 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
           </div>
         ) : (
           // Ana Sayfa İçeriği
-          <div className="flex-1 p-8 overflow-y-auto">
+          <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
               {/* Hero Section */}
-              <section className="text-center mb-16 animate-fade-in">
+              <section className="text-center mb-8 lg:mb-16 animate-fade-in">
                 <div className="max-w-4xl mx-auto">
-                  <h2 className="text-4xl font-display font-bold text-gray-900 mb-8">
+                  <h2 className="text-2xl lg:text-4xl font-display font-bold text-gray-900 mb-4 lg:mb-8">
                     Hoş Geldiniz
                   </h2>
-                  <div className="bg-gray-50 rounded-lg p-8">
-                    <div className="text-gray-700 space-y-4 text-lg leading-relaxed">
+                  <div className="bg-gray-50 rounded-lg p-4 lg:p-8">
+                    <div className="text-gray-700 space-y-4 text-base lg:text-lg leading-relaxed">
                       <p>
                         Bu site, yazdığım şiirleri paylaşmak için hazırladığım özel bir köşe. 
                         Her şiir, kalbimden geldi ve hayatımın farklı dönemlerinden ilham aldı.
                       </p>
                       <p>
-                        Sol taraftaki listeden istediğiniz şiiri seçerek okumaya başlayabilirsiniz. 
+                        <span className="lg:hidden">Üst menüdeki hamburger ikonuna tıklayarak</span>
+                        <span className="hidden lg:inline">Sol taraftaki listeden</span> istediğiniz şiiri seçerek okumaya başlayabilirsiniz. 
                         Her şiir, benim için özel anlamlar taşıyor ve umarım sizin için de değerli olur.
                       </p>
                     </div>
@@ -212,10 +250,11 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
 
               {/* Call to Action */}
               <section className="text-center">
-                <div className="bg-gray-50 rounded-lg p-8">
-                  <h3 className="text-2xl font-display font-bold text-gray-900 mb-4">Şiirleri Keşfetmeye Başlayın</h3>
+                <div className="bg-gray-50 rounded-lg p-4 lg:p-8">
+                  <h3 className="text-xl lg:text-2xl font-display font-bold text-gray-900 mb-4">Şiirleri Keşfetmeye Başlayın</h3>
                   <p className="text-gray-600 mb-6">
-                    Sol taraftaki listeden bir şiir seçerek okumaya başlayabilirsiniz.
+                    <span className="lg:hidden">Üst menüdeki hamburger ikonuna tıklayarak şiir listesini açabilirsiniz.</span>
+                    <span className="hidden lg:inline">Sol taraftaki listeden bir şiir seçerek okumaya başlayabilirsiniz.</span>
                   </p>
                 </div>
               </section>

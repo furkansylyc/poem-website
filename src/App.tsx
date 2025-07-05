@@ -10,11 +10,27 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [visitCount, setVisitCount] = useState<number>(0)
 
   useEffect(() => {
     loadPoems()
     checkAdminStatus()
+    loadAndIncrementVisits()
   }, [])
+
+  const loadAndIncrementVisits = async () => {
+    try {
+      // Önce mevcut ziyaret sayısını al
+      const visitsData = await apiService.getVisits()
+      setVisitCount(visitsData.count)
+      
+      // Sonra ziyaret sayısını artır
+      const incrementedData = await apiService.incrementVisits()
+      setVisitCount(incrementedData.count)
+    } catch (error) {
+      console.error('Ziyaret sayacı hatası:', error)
+    }
+  }
 
   const loadPoems = async () => {
     try {
@@ -116,8 +132,8 @@ function App() {
   return (
     <div className="h-screen w-screen bg-white">
       <Routes>
-        <Route path="/" element={<HomePage poems={poems} isAdmin={isAdmin} logoutAdmin={logoutAdmin} />} />
-        <Route path="/poem/:id" element={<HomePage poems={poems} isAdmin={isAdmin} logoutAdmin={logoutAdmin} />} />
+        <Route path="/" element={<HomePage poems={poems} isAdmin={isAdmin} logoutAdmin={logoutAdmin} visitCount={visitCount} />} />
+        <Route path="/poem/:id" element={<HomePage poems={poems} isAdmin={isAdmin} logoutAdmin={logoutAdmin} visitCount={visitCount} />} />
         <Route path="/admin/login" element={<AdminLogin loginAdmin={loginAdmin} />} />
         <Route path="/admin" element={<AdminPanel poems={poems} addPoem={addPoem} deletePoem={deletePoem} isAdmin={isAdmin} />} />
       </Routes>

@@ -62,6 +62,18 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
     }
   }
 
+  const handleResetVisits = async () => {
+    if (window.confirm('Ziyaret sayacını sıfırlamak istediğinizden emin misiniz?')) {
+      try {
+        await apiService.resetVisits()
+        alert('Ziyaret sayacı sıfırlandı!')
+      } catch (error) {
+        console.error('Ziyaret sayacı sıfırlama hatası:', error)
+        alert('Ziyaret sayacı sıfırlanırken bir hata oluştu.')
+      }
+    }
+  }
+
   const handleAddPoem = async (e: React.FormEvent) => {
     e.preventDefault()
     if (title.trim() && content.trim()) {
@@ -112,6 +124,15 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
                   <span className="ml-2">Yeni Şiir Ekle</span>
                 </>
               )}
+            </button>
+            <button
+              onClick={handleResetVisits}
+              className="button-secondary bg-red-600 hover:bg-red-700"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span className="ml-2">Ziyaret Sayacını Sıfırla</span>
             </button>
             <Link to="/" className="button-secondary">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

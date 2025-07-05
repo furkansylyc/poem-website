@@ -50,6 +50,14 @@ const commentSchema = new mongoose.Schema({
 
 const Comment = mongoose.model('Comment', commentSchema);
 
+// Ziyaret Sayacı Modeli
+const visitSchema = new mongoose.Schema({
+  count: { type: Number, default: 0 },
+  lastUpdated: { type: Date, default: Date.now }
+});
+
+const Visit = mongoose.model('Visit', visitSchema);
+
 // Admin Modeli
 const adminSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -279,6 +287,57 @@ app.post('/api/admin/setup', async (req, res) => {
     res.json({ message: 'Admin kullanıcısı oluşturuldu' });
   } catch (error) {
     console.error('Setup admin error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Ziyaret sayısını getir
+app.get('/api/visits', async (req, res) => {
+  try {
+    let visit = await Visit.findOne();
+    if (!visit) {
+      visit = new Visit({ count: 0 });
+      await visit.save();
+    }
+    res.json({ count: visit.count });
+  } catch (error) {
+    console.error('Get visits error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Ziyaret sayısını artır
+app.post('/api/visits/increment', async (req, res) => {
+  try {
+    let visit = await Visit.findOne();
+    if (!visit) {
+      visit = new Visit({ count: 1 });
+    } else {
+      visit.count += 1;
+      visit.lastUpdated = new Date();
+    }
+    await visit.save();
+    res.json({ count: visit.count });
+  } catch (error) {
+    console.error('Increment visits error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Ziyaret sayısını sıfırla (Admin için)
+app.post('/api/visits/reset', authenticateToken, async (req, res) => {
+  try {
+    let visit = await Visit.findOne();
+    if (!visit) {
+      visit = new Visit({ count: 0 });
+    } else {
+      visit.count = 0;
+      visit.lastUpdated = new Date();
+    }
+    await visit.save();
+    res.json({ count: visit.count, message: 'Ziyaret sayacı sıfırlandı' });
+  } catch (error) {
+    console.error('Reset visits error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });

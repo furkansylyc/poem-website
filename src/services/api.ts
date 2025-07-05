@@ -139,6 +139,25 @@ class ApiService {
     });
   }
 
+  // Ziyaret sayısını getir
+  async getVisits(): Promise<{ count: number }> {
+    return this.request('/visits');
+  }
+
+  // Ziyaret sayısını artır
+  async incrementVisits(): Promise<{ count: number }> {
+    return this.request('/visits/increment', {
+      method: 'POST',
+    });
+  }
+
+  // Ziyaret sayısını sıfırla (Admin için)
+  async resetVisits(): Promise<{ count: number; message: string }> {
+    return this.request('/visits/reset', {
+      method: 'POST',
+    });
+  }
+
   // Admin kurulumu (sadece bir kez)
   async setupAdmin(): Promise<{ message: string }> {
     return this.request('/admin/setup', {

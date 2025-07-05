@@ -34,7 +34,8 @@ mongoose.connect(process.env.MONGODB_URI, {
 const poemSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
-  date: { type: Date, default: Date.now }
+  date: { type: Date, default: Date.now },
+  views: { type: Number, default: 0 }
 });
 
 const Poem = mongoose.model('Poem', poemSchema);
@@ -100,13 +101,18 @@ app.get('/api/poems', async (req, res) => {
   }
 });
 
-// Tek şiir getir
+// Tek şiir getir ve görüntülenme sayısını artır
 app.get('/api/poems/:id', async (req, res) => {
   try {
     const poem = await Poem.findById(req.params.id);
     if (!poem) {
       return res.status(404).json({ message: 'Şiir bulunamadı' });
     }
+    
+    // Görüntülenme sayısını artır
+    poem.views += 1;
+    await poem.save();
+    
     res.json(poem);
   } catch (error) {
     console.error('Poem fetch error:', error);

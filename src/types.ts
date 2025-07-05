@@ -3,6 +3,7 @@ export interface Poem {
   title: string;
   content: string;
   date: string;
+  views: number;
 }
 
 export interface Comment {

@@ -309,13 +309,22 @@ const HomePage = ({ poems, isAdmin, logoutAdmin, visitCount }: HomePageProps) =>
               <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
                 <div className="bg-gray-50 border-b border-gray-200 p-4 lg:p-8">
                   <h1 className="text-2xl lg:text-3xl font-display font-bold text-gray-900 mb-2">{selectedPoem.title}</h1>
-                  <p className="text-gray-600">
-                    {new Date(selectedPoem.date).toLocaleDateString('tr-TR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
+                  <div className="flex items-center gap-4 text-gray-600">
+                    <p>
+                      {new Date(selectedPoem.date).toLocaleDateString('tr-TR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      <span className="text-sm">{selectedPoem.views.toLocaleString('tr-TR')} görüntülenme</span>
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="p-4 lg:p-8">

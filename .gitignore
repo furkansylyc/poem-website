@@ -23,5 +23,14 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment variables
+.env
+.env.local
+.env.production
 
+# Vercel
 .vercel
+
+# Backend
+backend/node_modules
+backend/.env

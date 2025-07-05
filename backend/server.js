@@ -23,7 +23,14 @@ app.use(cors({
 app.use(express.json());
 
 // MongoDB Bağlantısı
-mongoose.connect(process.env.MONGODB_URI);
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('MongoDB bağlantısı başarılı');
+}).catch((err) => {
+  console.error('MongoDB bağlantı hatası:', err);
+});
 
 // Şiir Modeli
 const poemSchema = new mongoose.Schema({

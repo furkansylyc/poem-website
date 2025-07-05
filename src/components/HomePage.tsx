@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { Poem } from '../types'
+import { Poem, Comment } from '../types'
 import { apiService } from '../services/api'
 
 interface HomePageProps {
@@ -17,6 +17,12 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [directPoem, setDirectPoem] = useState<Poem | null>(null)
   const [loadingDirectPoem, setLoadingDirectPoem] = useState(false)
+  const [comments, setComments] = useState<Comment[]>([])
+  const [loadingComments, setLoadingComments] = useState(false)
+  const [showCommentForm, setShowCommentForm] = useState(false)
+  const [commentName, setCommentName] = useState('')
+  const [commentText, setCommentText] = useState('')
+  const [submittingComment, setSubmittingComment] = useState(false)
   
   // Önce poems array'inden ara
   const selectedPoem = poems.find(p => p._id === id) || directPoem
@@ -38,6 +44,47 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
         })
     }
   }, [id, poems, directPoem, loadingDirectPoem])
+
+  // Şiir değiştiğinde yorumları yükle
+  useEffect(() => {
+    if (selectedPoem) {
+      loadComments()
+    }
+  }, [selectedPoem])
+
+  const loadComments = async () => {
+    if (!selectedPoem) return
+    
+    try {
+      setLoadingComments(true)
+      const commentsData = await apiService.getPoemComments(selectedPoem._id)
+      setComments(commentsData)
+    } catch (error) {
+      console.error('Yorumlar yüklenirken hata:', error)
+    } finally {
+      setLoadingComments(false)
+    }
+  }
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedPoem || !commentName.trim() || !commentText.trim()) return
+
+    try {
+      setSubmittingComment(true)
+      await apiService.addComment(selectedPoem._id, commentName.trim(), commentText.trim())
+      setCommentName('')
+      setCommentText('')
+      setShowCommentForm(false)
+      // Yorumlar otomatik olarak yüklenmeyecek, admin onayladıktan sonra görünecek
+      alert('Yorumunuz gönderildi. Admin onayından sonra yayınlanacak.')
+    } catch (error) {
+      console.error('Yorum gönderilirken hata:', error)
+      alert('Yorum gönderilirken bir hata oluştu.')
+    } finally {
+      setSubmittingComment(false)
+    }
+  }
 
   const handlePoemClick = (poemId: string) => {
     navigate(`/poem/${poemId}`)
@@ -273,6 +320,102 @@ const HomePage = ({ poems, isAdmin, logoutAdmin }: HomePageProps) => {
                 <div className="p-4 lg:p-8">
                   <div className="text-gray-700 text-base lg:text-lg leading-relaxed whitespace-pre-line mb-8">
                     {selectedPoem.content}
+                  </div>
+                  
+                  {/* Yorumlar Bölümü */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-4">Yorumlar</h3>
+                    
+                    {/* Yorum Formu */}
+                    <div className="mb-6">
+                      <button
+                        onClick={() => setShowCommentForm(!showCommentForm)}
+                        className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm"
+                      >
+                        {showCommentForm ? 'Yorum Formunu Kapat' : 'Yorum Yap'}
+                      </button>
+                      
+                      {showCommentForm && (
+                        <form onSubmit={handleSubmitComment} className="mt-4 p-4 bg-gray-50 rounded-lg">
+                          <div className="mb-4">
+                            <label htmlFor="commentName" className="block text-sm font-medium text-gray-700 mb-2">
+                              Adınız *
+                            </label>
+                            <input
+                              type="text"
+                              id="commentName"
+                              value={commentName}
+                              onChange={(e) => setCommentName(e.target.value)}
+                              required
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
+                              placeholder="Adınızı girin"
+                            />
+                          </div>
+                          <div className="mb-4">
+                            <label htmlFor="commentText" className="block text-sm font-medium text-gray-700 mb-2">
+                              Yorumunuz *
+                            </label>
+                            <textarea
+                              id="commentText"
+                              value={commentText}
+                              onChange={(e) => setCommentText(e.target.value)}
+                              required
+                              rows={4}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
+                              placeholder="Yorumunuzu yazın..."
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="submit"
+                              disabled={submittingComment}
+                              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                            >
+                              {submittingComment ? 'Gönderiliyor...' : 'Yorum Gönder'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setShowCommentForm(false)}
+                              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                            >
+                              İptal
+                            </button>
+                          </div>
+                        </form>
+                      )}
+                    </div>
+                    
+                    {/* Yorumlar Listesi */}
+                    {loadingComments ? (
+                      <div className="text-center py-4">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
+                        <p className="text-gray-600 text-sm">Yorumlar yükleniyor...</p>
+                      </div>
+                    ) : comments.length > 0 ? (
+                      <div className="space-y-4">
+                        {comments.map((comment) => (
+                          <div key={comment._id} className="bg-gray-50 p-4 rounded-lg">
+                            <div className="flex justify-between items-start mb-2">
+                              <h4 className="font-medium text-gray-900">{comment.name}</h4>
+                              <span className="text-xs text-gray-500">
+                                {new Date(comment.date).toLocaleDateString('tr-TR', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-gray-700 text-sm leading-relaxed">{comment.comment}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>Henüz yorum yapılmamış. İlk yorumu siz yapın!</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

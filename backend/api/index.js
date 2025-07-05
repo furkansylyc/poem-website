@@ -39,6 +39,17 @@ const poemSchema = new mongoose.Schema({
 
 const Poem = mongoose.model('Poem', poemSchema);
 
+// Yorum Modeli
+const commentSchema = new mongoose.Schema({
+  poemId: { type: mongoose.Schema.Types.ObjectId, ref: 'Poem', required: true },
+  name: { type: String, required: true },
+  comment: { type: String, required: true },
+  date: { type: Date, default: Date.now },
+  approved: { type: Boolean, default: false }
+});
+
+const Comment = mongoose.model('Comment', commentSchema);
+
 // Admin Modeli
 const adminSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -154,6 +165,98 @@ app.delete('/api/poems/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Şiir silindi' });
   } catch (error) {
     console.error('Delete poem error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Yorum ekle
+app.post('/api/comments', async (req, res) => {
+  try {
+    const { poemId, name, comment } = req.body;
+    
+    if (!poemId || !name || !comment) {
+      return res.status(400).json({ message: 'Şiir ID, ad ve yorum gerekli' });
+    }
+
+    // Şiirin var olduğunu kontrol et
+    const poem = await Poem.findById(poemId);
+    if (!poem) {
+      return res.status(404).json({ message: 'Şiir bulunamadı' });
+    }
+
+    const newComment = new Comment({
+      poemId,
+      name,
+      comment,
+      approved: false
+    });
+
+    const savedComment = await newComment.save();
+    res.status(201).json(savedComment);
+  } catch (error) {
+    console.error('Add comment error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Şiir için onaylanmış yorumları getir
+app.get('/api/poems/:id/comments', async (req, res) => {
+  try {
+    const comments = await Comment.find({ 
+      poemId: req.params.id, 
+      approved: true 
+    }).sort({ date: -1 });
+    res.json(comments);
+  } catch (error) {
+    console.error('Get comments error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Tüm yorumları getir (Admin için)
+app.get('/api/comments', authenticateToken, async (req, res) => {
+  try {
+    const comments = await Comment.find()
+      .populate('poemId', 'title')
+      .sort({ date: -1 });
+    res.json(comments);
+  } catch (error) {
+    console.error('Get all comments error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Yorum onayla/reddet (Admin için)
+app.put('/api/comments/:id/approve', authenticateToken, async (req, res) => {
+  try {
+    const { approved } = req.body;
+    const comment = await Comment.findByIdAndUpdate(
+      req.params.id,
+      { approved },
+      { new: true }
+    );
+    
+    if (!comment) {
+      return res.status(404).json({ message: 'Yorum bulunamadı' });
+    }
+    
+    res.json(comment);
+  } catch (error) {
+    console.error('Approve comment error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
+// Yorum sil (Admin için)
+app.delete('/api/comments/:id', authenticateToken, async (req, res) => {
+  try {
+    const comment = await Comment.findByIdAndDelete(req.params.id);
+    if (!comment) {
+      return res.status(404).json({ message: 'Yorum bulunamadı' });
+    }
+    res.json({ message: 'Yorum silindi' });
+  } catch (error) {
+    console.error('Delete comment error:', error);
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });

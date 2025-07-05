@@ -7,6 +7,15 @@ export interface Poem {
   date: string;
 }
 
+export interface Comment {
+  _id: string;
+  poemId: string;
+  name: string;
+  comment: string;
+  date: string;
+  approved: boolean;
+}
+
 export interface LoginResponse {
   token: string;
   message: string;
@@ -93,6 +102,39 @@ class ApiService {
   // Şiir sil
   async deletePoem(id: string): Promise<{ message: string }> {
     return this.request(`/poems/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Yorum ekle
+  async addComment(poemId: string, name: string, comment: string): Promise<Comment> {
+    return this.request('/comments', {
+      method: 'POST',
+      body: JSON.stringify({ poemId, name, comment }),
+    });
+  }
+
+  // Şiir için onaylanmış yorumları getir
+  async getPoemComments(poemId: string): Promise<Comment[]> {
+    return this.request(`/poems/${poemId}/comments`);
+  }
+
+  // Tüm yorumları getir (Admin için)
+  async getAllComments(): Promise<Comment[]> {
+    return this.request('/comments');
+  }
+
+  // Yorum onayla/reddet (Admin için)
+  async approveComment(commentId: string, approved: boolean): Promise<Comment> {
+    return this.request(`/comments/${commentId}/approve`, {
+      method: 'PUT',
+      body: JSON.stringify({ approved }),
+    });
+  }
+
+  // Yorum sil (Admin için)
+  async deleteComment(commentId: string): Promise<{ message: string }> {
+    return this.request(`/comments/${commentId}`, {
       method: 'DELETE',
     });
   }

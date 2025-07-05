@@ -169,6 +169,12 @@ app.post('/api/admin/setup', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server ${PORT} portunda çalışıyor`);
-}); 
+// Vercel serverless function export
+module.exports = app;
+
+// Local development için
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server ${PORT} portunda çalışıyor`);
+  });
+} 

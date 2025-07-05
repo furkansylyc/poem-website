@@ -13,11 +13,18 @@
       }
     }
   ],
-  "rewrites": [
+  "functions": {
+    "backend/server.js": {
+      "maxDuration": 30
+    }
+  },
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/backend/server.js"
-    },
+      "src": "/api/(.*)",
+      "dest": "/backend/server.js"
+    }
+  ],
+  "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/dist/index.html"

@@ -7,14 +7,16 @@ interface AdminPanelProps {
   poems: Poem[]
   addPoem: (poem: Omit<Poem, '_id' | 'date'> & { date?: string }) => Promise<boolean>
   deletePoem: (id: string) => Promise<boolean>
+  updatePoem: (id: string, title: string, content: string, date?: string) => Promise<boolean>
   isAdmin: boolean
 }
 
-const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) => {
+const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin }: AdminPanelProps) => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [poemDate, setPoemDate] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
+  const [editingPoem, setEditingPoem] = useState<Poem | null>(null)
   const [activeTab, setActiveTab] = useState<'poems' | 'comments'>('poems')
   const [comments, setComments] = useState<Comment[]>([])
   const [loadingComments, setLoadingComments] = useState(false)
@@ -101,6 +103,40 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
     }
   }
 
+  const handleEditPoem = (poem: Poem) => {
+    setEditingPoem(poem)
+    setTitle(poem.title)
+    setContent(poem.content)
+    setPoemDate(new Date(poem.date).toISOString().split('T')[0])
+    setShowAddForm(false)
+  }
+
+  const handleUpdatePoem = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingPoem || !title.trim() || !content.trim()) return
+
+    const success = await updatePoem(
+      editingPoem._id,
+      title.trim(),
+      content.trim(),
+      poemDate || undefined
+    )
+    
+    if (success) {
+      setTitle('')
+      setContent('')
+      setPoemDate('')
+      setEditingPoem(null)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingPoem(null)
+    setTitle('')
+    setContent('')
+    setPoemDate('')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
@@ -112,10 +148,16 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
           </div>
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
             <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className={showAddForm ? "button-secondary" : "button-primary"}
+              onClick={() => {
+                if (editingPoem) {
+                  handleCancelEdit()
+                } else {
+                  setShowAddForm(!showAddForm)
+                }
+              }}
+              className={showAddForm || editingPoem ? "button-secondary" : "button-primary"}
             >
-              {showAddForm ? (
+              {showAddForm || editingPoem ? (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -175,16 +217,27 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
           </div>
         </div>
 
-        {/* Add Poem Form */}
-        {activeTab === 'poems' && showAddForm && (
+        {/* Add/Edit Poem Form */}
+        {activeTab === 'poems' && (showAddForm || editingPoem) && (
           <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 lg:p-6 mb-6 lg:mb-8 animate-slide-up">
             <h2 className="text-lg lg:text-xl font-display font-bold text-gray-900 mb-4 flex items-center">
-              <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Yeni Şiir Ekle
+              {editingPoem ? (
+                <>
+                  <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Şiir Düzenle
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Yeni Şiir Ekle
+                </>
+              )}
             </h2>
-            <form onSubmit={handleAddPoem} className="space-y-4">
+            <form onSubmit={editingPoem ? handleUpdatePoem : handleAddPoem} className="space-y-4">
               <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                   Şiir Başlığı
@@ -229,12 +282,26 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
                   required
                 />
               </div>
-              <button type="submit" className="button-primary w-full sm:w-auto">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="ml-2">Şiir Ekle</span>
-              </button>
+              <div className="flex gap-2">
+                <button type="submit" className="button-primary">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="ml-2">{editingPoem ? 'Şiiri Güncelle' : 'Şiir Ekle'}</span>
+                </button>
+                {editingPoem && (
+                  <button 
+                    type="button" 
+                    onClick={handleCancelEdit}
+                    className="button-secondary"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span className="ml-2">İptal</span>
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         )}
@@ -255,39 +322,50 @@ const AdminPanel = ({ poems, addPoem, deletePoem, isAdmin }: AdminPanelProps) =>
                 className="border border-gray-200 rounded-lg p-3 lg:p-4 hover:bg-gray-50 transition-colors animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
-                  <div className="flex-1 mb-3 sm:mb-0">
-                    <h3 className="text-base lg:text-lg font-display font-semibold text-gray-900 mb-2">{poem.title}</h3>
-                    <div className="flex items-center gap-4 text-gray-500 text-xs lg:text-sm mb-2">
-                      <p>
-                        {new Date(poem.date).toLocaleDateString('tr-TR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </p>
-                      <div className="flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        <span>{(poem.views || 0).toLocaleString('tr-TR')} görüntülenme</span>
+                                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                    <div className="flex-1 mb-3 sm:mb-0">
+                      <h3 className="text-base lg:text-lg font-display font-semibold text-gray-900 mb-2">{poem.title}</h3>
+                      <div className="flex items-center gap-4 text-gray-500 text-xs lg:text-sm mb-2">
+                        <p>
+                          {new Date(poem.date).toLocaleDateString('tr-TR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          <span>{(poem.views || 0).toLocaleString('tr-TR')} görüntülenme</span>
+                        </div>
+                      </div>
+                      <div className="text-gray-700 text-xs lg:text-sm line-clamp-2 bg-gray-50 rounded p-2">
+                        {poem.content.split('\n')[0]}...
                       </div>
                     </div>
-                    <div className="text-gray-700 text-xs lg:text-sm line-clamp-2 bg-gray-50 rounded p-2">
-                      {poem.content.split('\n')[0]}...
+                    <div className="flex gap-2 self-start sm:ml-4">
+                      <button
+                        onClick={() => handleEditPoem(poem)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded transition-colors"
+                        title="Şiiri düzenle"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeletePoem(poem._id)}
+                        className="bg-red-500 hover:bg-red-600 text-white p-2 rounded transition-colors"
+                        title="Şiiri sil"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleDeletePoem(poem._id)}
-                    className="bg-red-500 hover:bg-red-600 text-white p-2 rounded transition-colors self-start sm:ml-4"
-                    title="Şiiri sil"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
               </div>
             ))}
           </div>

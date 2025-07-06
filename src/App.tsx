@@ -80,6 +80,17 @@ function App() {
     }
   }
 
+  const updatePoem = async (id: string, title: string, content: string, date?: string) => {
+    try {
+      const updatedPoem = await apiService.updatePoem(id, title, content, date)
+      setPoems(prev => prev.map(poem => poem._id === id ? updatedPoem : poem))
+      return true
+    } catch (err) {
+      console.error('Şiir güncellenirken hata:', err)
+      return false
+    }
+  }
+
   const loginAdmin = async (username: string, password: string) => {
     try {
       await apiService.login(username, password)
@@ -135,7 +146,7 @@ function App() {
         <Route path="/" element={<HomePage poems={poems} isAdmin={isAdmin} logoutAdmin={logoutAdmin} visitCount={visitCount} />} />
         <Route path="/poem/:id" element={<HomePage poems={poems} isAdmin={isAdmin} logoutAdmin={logoutAdmin} visitCount={visitCount} />} />
         <Route path="/admin/login" element={<AdminLogin loginAdmin={loginAdmin} />} />
-        <Route path="/admin" element={<AdminPanel poems={poems} addPoem={addPoem} deletePoem={deletePoem} isAdmin={isAdmin} />} />
+        <Route path="/admin" element={<AdminPanel poems={poems} addPoem={addPoem} deletePoem={deletePoem} updatePoem={updatePoem} isAdmin={isAdmin} />} />
       </Routes>
     </div>
   )

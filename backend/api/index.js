@@ -200,6 +200,38 @@ app.delete('/api/poems/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Şiir düzenle (Admin gerekli)
+app.put('/api/poems/:id', authenticateToken, async (req, res) => {
+  try {
+    const { title, content, date } = req.body;
+    
+    if (!title || !content) {
+      return res.status(400).json({ message: 'Başlık ve içerik gerekli' });
+    }
+
+    // Tarih varsa kullan, yoksa mevcut tarihi koru
+    const updateData = { title, content };
+    if (date) {
+      updateData.date = new Date(date);
+    }
+
+    const poem = await Poem.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    if (!poem) {
+      return res.status(404).json({ message: 'Şiir bulunamadı' });
+    }
+
+    res.json(poem);
+  } catch (error) {
+    console.error('Update poem error:', error);
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 // Yorum ekle
 app.post('/api/comments', async (req, res) => {
   try {

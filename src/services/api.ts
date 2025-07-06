@@ -107,6 +107,14 @@ class ApiService {
     });
   }
 
+  // Şiir düzenle
+  async updatePoem(id: string, title: string, content: string, date?: string): Promise<Poem> {
+    return this.request(`/poems/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ title, content, date }),
+    });
+  }
+
   // Yorum ekle
   async addComment(poemId: string, name: string, comment: string): Promise<Comment> {
     return this.request('/comments', {

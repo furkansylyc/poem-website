@@ -67,6 +67,8 @@ const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin, showToast
         console.error('Yorum silme hatası:', error)
         showToast('Yorum silinirken bir hata oluştu.', 'error')
       }
+    } else {
+      showToast('Yorum silme işlemi iptal edildi.', 'success')
     }
   }
 
@@ -113,6 +115,8 @@ const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin, showToast
       } else {
         showToast('Şiir silinirken bir hata oluştu.', 'error')
       }
+    } else {
+      showToast('Şiir silme işlemi iptal edildi.', 'success')
     }
   }
 

@@ -52,10 +52,9 @@ function App() {
   }
 
   const checkAdminStatus = () => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      setIsAdmin(true)
-    }
+    // Token'ı temizle ve admin durumunu sıfırla
+    localStorage.removeItem('token')
+    setIsAdmin(false)
   }
 
   const addPoem = async (poem: Omit<Poem, '_id' | 'date'> & { date?: string }) => {

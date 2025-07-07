@@ -23,7 +23,7 @@ export interface LoginResponse {
 }
 
 class ApiService {
-  private token: string | null = localStorage.getItem('token');
+  private token: string | null = null;
 
   setToken(token: string) {
     this.token = token;
@@ -33,6 +33,11 @@ class ApiService {
   clearToken() {
     this.token = null;
     localStorage.removeItem('token');
+  }
+
+  resetToken() {
+    this.clearToken();
+    this.token = localStorage.getItem('token');
   }
 
   private async request(endpoint: string, options: RequestInit = {}) {

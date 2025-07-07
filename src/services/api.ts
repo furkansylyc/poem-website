@@ -42,7 +42,6 @@ class ApiService {
 
   private async request(endpoint: string, options: RequestInit = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
-    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
@@ -51,41 +50,34 @@ class ApiService {
       ...options,
     };
 
-    // Sadece admin endpoint'leri için token ekle
+    // Sadece admin işlemlerinde token gönder
     const adminEndpoints = [
-      '/admin/login',
-      '/admin/setup', 
-      '/poems', // POST, PUT, DELETE
-      '/visits/reset'
+      { path: '/comments', methods: ['GET', 'PUT', 'DELETE'] },
+      { path: '/poems', methods: ['POST', 'PUT', 'DELETE'] },
+      { path: '/visits/reset', methods: ['POST'] },
+      { path: '/comments/', methods: ['PUT', 'DELETE'] }, // /comments/:id/approve, /comments/:id
     ];
-    
-    const isAdminEndpoint = adminEndpoints.some(adminEndpoint => endpoint.startsWith(adminEndpoint));
-    
-    // GET /comments endpoint'i özel durum - sadece admin kullanabilir
-    if (endpoint === '/comments' && options.method !== 'POST') {
-      if (this.token) {
-        config.headers = {
-          ...config.headers,
-          'Authorization': `Bearer ${this.token}`,
-        };
-      }
-    }
-    // Diğer admin endpoint'leri için token ekle
-    else if (this.token && isAdminEndpoint) {
+
+    const method = (options.method || 'GET').toUpperCase();
+    const isAdminEndpoint = adminEndpoints.some(
+      (ep) =>
+        endpoint.startsWith(ep.path) &&
+        (!ep.methods || ep.methods.includes(method))
+    );
+
+    if (this.token && isAdminEndpoint) {
       config.headers = {
         ...config.headers,
-        'Authorization': `Bearer ${this.token}`,
+        Authorization: `Bearer ${this.token}`,
       };
     }
 
     try {
       const response = await fetch(url, config);
-      
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Bir hata oluştu');
       }
-
       return await response.json();
     } catch (error) {
       console.error('API Error:', error);

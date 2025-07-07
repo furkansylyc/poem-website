@@ -8,6 +8,9 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// API routes'ları import et
+const apiRoutes = require('./api');
+
 // Debug: Environment variables'ı kontrol et
 console.log('MONGODB_URI:', process.env.MONGODB_URI);
 console.log('JWT_SECRET:', process.env.JWT_SECRET);
@@ -174,6 +177,14 @@ app.post('/api/admin/setup', async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Sunucu hatası' });
   }
+});
+
+// API routes'ları kullan
+app.use('/api', apiRoutes);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'API çalışıyor' });
 });
 
 // Vercel serverless function export

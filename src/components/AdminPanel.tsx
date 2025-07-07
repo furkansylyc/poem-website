@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Poem, Comment } from '../types'
 import { apiService } from '../services/api'
+import ConfirmModal from './ConfirmModal'
 
 interface AdminPanelProps {
   poems: Poem[]
@@ -21,6 +22,19 @@ const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin, showToast
   const [activeTab, setActiveTab] = useState<'poems' | 'comments'>('poems')
   const [comments, setComments] = useState<Comment[]>([])
   const [loadingComments, setLoadingComments] = useState(false)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+    type: 'danger' | 'warning' | 'info'
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'danger'
+  })
   const navigate = useNavigate()
 
   if (!isAdmin) {
@@ -58,32 +72,42 @@ const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin, showToast
   }
 
   const handleDeleteComment = async (commentId: string) => {
-    if (window.confirm('Bu yorumu silmek istediğinizden emin misiniz?')) {
-      try {
-        await apiService.deleteComment(commentId)
-        showToast('Yorum başarıyla silindi!', 'success')
-        loadComments() // Yorumları yeniden yükle
-      } catch (error) {
-        console.error('Yorum silme hatası:', error)
-        showToast('Yorum silinirken bir hata oluştu.', 'error')
-      }
-    } else {
-      showToast('Yorum silme işlemi iptal edildi.', 'success')
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Yorumu Sil',
+      message: 'Bu yorumu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+      onConfirm: async () => {
+        try {
+          await apiService.deleteComment(commentId)
+          showToast('Yorum başarıyla silindi!', 'success')
+          loadComments() // Yorumları yeniden yükle
+        } catch (error) {
+          console.error('Yorum silme hatası:', error)
+          showToast('Yorum silinirken bir hata oluştu.', 'error')
+        }
+      },
+      type: 'danger'
+    })
   }
 
   const handleResetVisits = async () => {
-    if (window.confirm('Ziyaret sayacını VE tüm şiir görüntülenme sayılarını sıfırlamak istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!')) {
-      try {
-        const result = await apiService.resetVisits()
-        alert(result.message || 'Tüm sayaçlar sıfırlandı!')
-        // Şiir listesini yeniden yükle
-        window.location.reload()
-      } catch (error) {
-        console.error('Sayaç sıfırlama hatası:', error)
-        alert('Sayaçlar sıfırlanırken bir hata oluştu.')
-      }
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Sayaçları Sıfırla',
+      message: 'Ziyaret sayacını VE tüm şiir görüntülenme sayılarını sıfırlamak istediğinizden emin misiniz?\n\nBu işlem geri alınamaz!',
+      onConfirm: async () => {
+        try {
+          const result = await apiService.resetVisits()
+          showToast(result.message || 'Tüm sayaçlar sıfırlandı!', 'success')
+          // Şiir listesini yeniden yükle
+          window.location.reload()
+        } catch (error) {
+          console.error('Sayaç sıfırlama hatası:', error)
+          showToast('Sayaçlar sıfırlanırken bir hata oluştu.', 'error')
+        }
+      },
+      type: 'warning'
+    })
   }
 
   const handleAddPoem = async (e: React.FormEvent) => {
@@ -108,16 +132,20 @@ const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin, showToast
   }
 
   const handleDeletePoem = async (id: string) => {
-    if (window.confirm('Bu şiiri silmek istediğinizden emin misiniz?')) {
-      const success = await deletePoem(id)
-      if (success) {
-        showToast('Şiir başarıyla silindi!', 'success')
-      } else {
-        showToast('Şiir silinirken bir hata oluştu.', 'error')
-      }
-    } else {
-      showToast('Şiir silme işlemi iptal edildi.', 'success')
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Şiiri Sil',
+      message: 'Bu şiiri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+      onConfirm: async () => {
+        const success = await deletePoem(id)
+        if (success) {
+          showToast('Şiir başarıyla silindi!', 'success')
+        } else {
+          showToast('Şiir silinirken bir hata oluştu.', 'error')
+        }
+      },
+      type: 'danger'
+    })
   }
 
   const handleEditPoem = (poem: Poem) => {
@@ -488,6 +516,18 @@ const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin, showToast
           </div>
         )}
       </div>
+      
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        confirmText="Onayla"
+        cancelText="İptal"
+      />
     </div>
   )
 }

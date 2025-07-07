@@ -47,18 +47,26 @@ class ApiService {
     };
 
     // Sadece admin endpoint'leri için token ekle
-    const adminEndpoints = ['/admin/login', '/admin/setup', '/poems', '/visits/reset'];
+    const adminEndpoints = [
+      '/admin/login',
+      '/admin/setup', 
+      '/poems', // POST, PUT, DELETE
+      '/visits/reset'
+    ];
+    
     const isAdminEndpoint = adminEndpoints.some(adminEndpoint => endpoint.startsWith(adminEndpoint));
     
-    // /comments endpoint'i özel durum - sadece GET /comments (tüm yorumları getir) admin için
-    if (endpoint === '/comments' && this.token) {
-      config.headers = {
-        ...config.headers,
-        'Authorization': `Bearer ${this.token}`,
-      };
+    // GET /comments endpoint'i özel durum - sadece admin kullanabilir
+    if (endpoint === '/comments' && options.method !== 'POST') {
+      if (this.token) {
+        config.headers = {
+          ...config.headers,
+          'Authorization': `Bearer ${this.token}`,
+        };
+      }
     }
-    
-    if (this.token && isAdminEndpoint) {
+    // Diğer admin endpoint'leri için token ekle
+    else if (this.token && isAdminEndpoint) {
       config.headers = {
         ...config.headers,
         'Authorization': `Bearer ${this.token}`,
@@ -127,7 +135,7 @@ class ApiService {
     });
   }
 
-  // Yorum ekle
+  // Yorum ekle (herkes yapabilir)
   async addComment(poemId: string, name: string, comment: string): Promise<Comment> {
     return this.request('/comments', {
       method: 'POST',
@@ -135,17 +143,17 @@ class ApiService {
     });
   }
 
-  // Şiir için onaylanmış yorumları getir
+  // Şiir için onaylanmış yorumları getir (herkes görebilir)
   async getPoemComments(poemId: string): Promise<Comment[]> {
     return this.request(`/poems/${poemId}/comments`);
   }
 
-  // Tüm yorumları getir (Admin için)
+  // Tüm yorumları getir (Sadece admin)
   async getAllComments(): Promise<Comment[]> {
     return this.request('/comments');
   }
 
-  // Yorum onayla/reddet (Admin için)
+  // Yorum onayla/reddet (Sadece admin)
   async approveComment(commentId: string, approved: boolean): Promise<Comment> {
     return this.request(`/comments/${commentId}/approve`, {
       method: 'PUT',
@@ -153,7 +161,7 @@ class ApiService {
     });
   }
 
-  // Yorum sil (Admin için)
+  // Yorum sil (Sadece admin)
   async deleteComment(commentId: string): Promise<{ message: string }> {
     return this.request(`/comments/${commentId}`, {
       method: 'DELETE',

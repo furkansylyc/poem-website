@@ -46,7 +46,11 @@ class ApiService {
       ...options,
     };
 
-    if (this.token) {
+    // Sadece admin endpoint'leri için token ekle
+    const adminEndpoints = ['/admin/login', '/admin/setup', '/poems', '/comments', '/visits/reset'];
+    const isAdminEndpoint = adminEndpoints.some(adminEndpoint => endpoint.startsWith(adminEndpoint));
+    
+    if (this.token && isAdminEndpoint) {
       config.headers = {
         ...config.headers,
         'Authorization': `Bearer ${this.token}`,

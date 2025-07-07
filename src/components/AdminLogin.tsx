@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 
 interface AdminLoginProps {
   loginAdmin: (username: string, password: string) => Promise<boolean>
+  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void
 }
 
-const AdminLogin = ({ loginAdmin }: AdminLoginProps) => {
+const AdminLogin = ({ loginAdmin, showToast }: AdminLoginProps) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -15,8 +16,10 @@ const AdminLogin = ({ loginAdmin }: AdminLoginProps) => {
     e.preventDefault()
     const success = await loginAdmin(username, password)
     if (success) {
+      showToast('Başarıyla giriş yapıldı!', 'success')
       navigate('/admin')
     } else {
+      showToast('Giriş başarısız. Kullanıcı adı veya şifre hatalı.', 'error')
       setError('Kullanıcı adı veya şifre yanlış!')
     }
   }

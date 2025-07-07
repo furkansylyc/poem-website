@@ -3,6 +3,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Dark mode transitions */
+* {
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
 :root {
   --primary: #2563eb;
   --primary-dark: #1d4ed8;

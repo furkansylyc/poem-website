@@ -9,9 +9,10 @@ interface AdminPanelProps {
   deletePoem: (id: string) => Promise<boolean>
   updatePoem: (id: string, title: string, content: string, date?: string) => Promise<boolean>
   isAdmin: boolean
+  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void
 }
 
-const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin }: AdminPanelProps) => {
+const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin, showToast }: AdminPanelProps) => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [poemDate, setPoemDate] = useState('')
@@ -48,9 +49,11 @@ const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin }: AdminPa
   const handleApproveComment = async (commentId: string, approved: boolean) => {
     try {
       await apiService.approveComment(commentId, approved)
+      showToast(`Yorum başarıyla ${approved ? 'onaylandı' : 'reddedildi'}!`, 'success')
       loadComments() // Yorumları yeniden yükle
     } catch (error) {
       console.error('Yorum onaylama hatası:', error)
+      showToast('Yorum işlemi sırasında bir hata oluştu.', 'error')
     }
   }
 
@@ -58,9 +61,11 @@ const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin }: AdminPa
     if (window.confirm('Bu yorumu silmek istediğinizden emin misiniz?')) {
       try {
         await apiService.deleteComment(commentId)
+        showToast('Yorum başarıyla silindi!', 'success')
         loadComments() // Yorumları yeniden yükle
       } catch (error) {
         console.error('Yorum silme hatası:', error)
+        showToast('Yorum silinirken bir hata oluştu.', 'error')
       }
     }
   }
@@ -89,17 +94,25 @@ const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin }: AdminPa
         date: poemDate || undefined
       })
       if (success) {
+        showToast('Şiir başarıyla eklendi!', 'success')
         setTitle('')
         setContent('')
         setPoemDate('')
         setShowAddForm(false)
+      } else {
+        showToast('Şiir eklenirken bir hata oluştu.', 'error')
       }
     }
   }
 
   const handleDeletePoem = async (id: string) => {
     if (window.confirm('Bu şiiri silmek istediğinizden emin misiniz?')) {
-      await deletePoem(id)
+      const success = await deletePoem(id)
+      if (success) {
+        showToast('Şiir başarıyla silindi!', 'success')
+      } else {
+        showToast('Şiir silinirken bir hata oluştu.', 'error')
+      }
     }
   }
 
@@ -123,10 +136,13 @@ const AdminPanel = ({ poems, addPoem, deletePoem, updatePoem, isAdmin }: AdminPa
     )
     
     if (success) {
+      showToast('Şiir başarıyla güncellendi!', 'success')
       setTitle('')
       setContent('')
       setPoemDate('')
       setEditingPoem(null)
+    } else {
+      showToast('Şiir güncellenirken bir hata oluştu.', 'error')
     }
   }
 

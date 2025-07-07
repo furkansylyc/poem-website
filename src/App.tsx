@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import HomePage from './components/HomePage'
 import AdminLogin from './components/AdminLogin'
 import AdminPanel from './components/AdminPanel'
+import Toast from './components/Toast'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { apiService, Poem } from './services/api'
 
 function App() {
@@ -11,6 +13,15 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [visitCount, setVisitCount] = useState<number>(0)
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error' | 'info' | 'warning'
+    isVisible: boolean
+  }>({
+    message: '',
+    type: 'info',
+    isVisible: false
+  })
 
   useEffect(() => {
     loadPoems()
@@ -104,6 +115,15 @@ function App() {
   const logoutAdmin = () => {
     apiService.clearToken()
     setIsAdmin(false)
+    showToast('Başarıyla çıkış yapıldı', 'success')
+  }
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    setToast({ message, type, isVisible: true })
+  }
+
+  const hideToast = () => {
+    setToast(prev => ({ ...prev, isVisible: false }))
   }
 
   if (loading) {
@@ -140,14 +160,22 @@ function App() {
   }
 
   return (
-    <div className="h-screen w-screen bg-white">
-      <Routes>
-        <Route path="/" element={<HomePage poems={poems} isAdmin={isAdmin} logoutAdmin={logoutAdmin} visitCount={visitCount} />} />
-        <Route path="/poem/:id" element={<HomePage poems={poems} isAdmin={isAdmin} logoutAdmin={logoutAdmin} visitCount={visitCount} />} />
-        <Route path="/admin/login" element={<AdminLogin loginAdmin={loginAdmin} />} />
-        <Route path="/admin" element={<AdminPanel poems={poems} addPoem={addPoem} deletePoem={deletePoem} updatePoem={updatePoem} isAdmin={isAdmin} />} />
-      </Routes>
-    </div>
+    <ThemeProvider>
+      <div className="h-screen w-screen bg-white dark:bg-gray-900 transition-colors duration-200">
+        <Routes>
+          <Route path="/" element={<HomePage poems={poems} isAdmin={isAdmin} logoutAdmin={logoutAdmin} visitCount={visitCount} showToast={showToast} />} />
+          <Route path="/poem/:id" element={<HomePage poems={poems} isAdmin={isAdmin} logoutAdmin={logoutAdmin} visitCount={visitCount} showToast={showToast} />} />
+          <Route path="/admin/login" element={<AdminLogin loginAdmin={loginAdmin} showToast={showToast} />} />
+          <Route path="/admin" element={<AdminPanel poems={poems} addPoem={addPoem} deletePoem={deletePoem} updatePoem={updatePoem} isAdmin={isAdmin} showToast={showToast} />} />
+        </Routes>
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          isVisible={toast.isVisible}
+          onClose={hideToast}
+        />
+      </div>
+    </ThemeProvider>
   )
 }
 

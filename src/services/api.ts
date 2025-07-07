@@ -47,8 +47,16 @@ class ApiService {
     };
 
     // Sadece admin endpoint'leri için token ekle
-    const adminEndpoints = ['/admin/login', '/admin/setup', '/poems', '/comments', '/visits/reset'];
+    const adminEndpoints = ['/admin/login', '/admin/setup', '/poems', '/visits/reset'];
     const isAdminEndpoint = adminEndpoints.some(adminEndpoint => endpoint.startsWith(adminEndpoint));
+    
+    // /comments endpoint'i özel durum - sadece GET /comments (tüm yorumları getir) admin için
+    if (endpoint === '/comments' && this.token) {
+      config.headers = {
+        ...config.headers,
+        'Authorization': `Bearer ${this.token}`,
+      };
+    }
     
     if (this.token && isAdminEndpoint) {
       config.headers = {
